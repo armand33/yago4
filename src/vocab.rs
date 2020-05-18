@@ -77,6 +77,9 @@ pub const WD_Q199: NamedNode<'_> = NamedNode {
 pub const WD_Q2: NamedNode<'_> = NamedNode {
     iri: "http://www.wikidata.org/entity/Q2",
 };
+pub const WD_Q5: NamedNode<'_> = NamedNode {
+    iri: "http://www.wikidata.org/entity/Q5",
+};
 pub const WD_Q1985727: NamedNode<'_> = NamedNode {
     iri: "http://www.wikidata.org/entity/Q1985727",
 };

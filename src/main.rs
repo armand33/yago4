@@ -51,11 +51,12 @@ fn main() {
                 )
                 .arg(Arg::with_name("full").long("full").help("Generate Yago 4 from all Wikidata"))
                 .arg(Arg::with_name("en-wiki").long("en-wiki").help("Generate Yago 4 with only the entities with an English Wikipedia article"))
-                .arg(Arg::with_name("all-wikis").long("all-wikis").help("Generate Yago 4 with only the entities with an Wikipedia article in any language"))
+                .arg(Arg::with_name("all-wikis").long("all-wikis").help("Generate Yago 4 with only the entities with a Wikipedia article in any language"))
+                .arg(Arg::with_name("humans").long("humans").help("Generate Yago 4 with only the entities that are instances of humans (Q5) in Wikidata"))
                 .group(
                     ArgGroup::with_name("size")
                         .required(true)
-                        .args(&["full", "en-wiki", "all-wikis"]),
+                        .args(&["full", "en-wiki", "all-wikis", "humans"]),
                 ),
         )
         .get_matches();
@@ -75,6 +76,8 @@ fn main() {
                 YagoSize::AllWikipedias
             } else if matches.is_present("full") {
                 YagoSize::Full
+            }else if matches.is_present("humans") {
+                YagoSize::Humans
             } else {
                 panic!("Should not happen")
             },

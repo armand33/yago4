@@ -26,6 +26,7 @@ pub enum YagoSize {
     Full,
     AllWikipedias,
     EnglishWikipedia,
+    Humans,
 }
 
 const P_PREFIX: &str = "http://www.wikidata.org/prop/";
@@ -242,6 +243,17 @@ fn wikidata_to_yago_uris_mapping(
         wikidata_items_with_wikipedia_article.len(),
     );
 
+    let human_item = YagoTerm::from(WD_Q5);
+    let wikidata_items_humans: HashSet<YagoTerm> = partitioned_statements
+        .subjects_objects_for_predicate(WDT_P31)
+        .filter(|(_, o)| o == &human_item)
+        .map(|(s, _)| s)
+        .collect();
+    stats.set_global(
+        "Humans items",
+        wikidata_items_humans.len()
+    );
+
     let wikidata_items_to_keep: HashSet<YagoTerm> = match size {
         YagoSize::Full => {
             println!("Considering all Wikidata items");
@@ -257,6 +269,10 @@ fn wikidata_to_yago_uris_mapping(
                 .iter()
                 .map(|(k, _)| k.clone())
                 .collect()
+        }
+        YagoSize::Humans => {
+            println!("Considering only Wikidata items which are instances of Q5.");
+            wikidata_items_humans
         }
     };
 
