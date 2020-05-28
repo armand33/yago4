@@ -243,17 +243,6 @@ fn wikidata_to_yago_uris_mapping(
         wikidata_items_with_wikipedia_article.len(),
     );
 
-    let human_item = YagoTerm::from(WD_Q5);
-    let wikidata_items_humans: HashSet<YagoTerm> = partitioned_statements
-        .subjects_objects_for_predicate(WDT_P31)
-        .filter(|(_, o)| o == &human_item)
-        .map(|(s, _)| s)
-        .collect();
-    stats.set_global(
-        "Humans items",
-        wikidata_items_humans.len()
-    );
-
     let wikidata_items_to_keep: HashSet<YagoTerm> = match size {
         YagoSize::Full => {
             println!("Considering all Wikidata items");
@@ -271,8 +260,8 @@ fn wikidata_to_yago_uris_mapping(
                 .collect()
         }
         YagoSize::Humans => {
-            println!("Considering only Wikidata items which are instances of Q5.");
-            wikidata_items_humans
+            println!("Considering all Wikidata items. They will be filtered later.");
+            wikidata_items
         }
     };
 
@@ -700,6 +689,34 @@ fn yago_shape_instances(
         instances_in_disjoint_intersections.len(),
     );
 
+    // test with humans
+    let human_item = YagoTerm::from(WD_Q5);
+    let human_instances: HashSet<YagoTerm> = partitioned_statements
+        .subjects_objects_for_predicate(WDT_P31)
+        .filter(|(_, o)| o == &human_item)
+        .map(|(s, _)| s)
+        .collect();
+    stats.set_global(
+        "Humans items",
+        human_instances.len()
+    );
+    println!("{} human items", human_instances.len());
+
+    /*
+    let human_neighbors_1: HashSet<YagoTerm> = partitioned_statements
+        .filter(|(s, _, o)| human_instances.contains(s))
+        .map(|(_, o)| o)
+        .collect();
+
+    let human_neighbors_2: HashSet<YagoTerm> = schema
+        .filter(|(s, _, o)| human_instances.contains(o))
+        .map(|(s, _)| s)
+        .collect();
+
+    let instances_to_keep: HashSet<YagoTerm> = human_instances.union(&human_neighbors_1).union(&human_neighbors_2);
+    */
+    let instances_to_keep: HashSet<YagoTerm> = human_instances;
+
     instances_without_intersection_removal
         .into_iter()
         .map(|(class, mut instances)| {
@@ -711,9 +728,10 @@ fn yago_shape_instances(
                 instances.remove(&c);
             });
 
-            stats.set_local("Instances of a shape", class.to_string(), instances.len());
+            let final_set: HashSet<YagoTerm> = instances.intersection(&instances_to_keep).cloned().collect();
+            stats.set_local("Instances of a shape", class.to_string(), final_set.len());
 
-            (class, instances)
+            (class, final_set)
         })
         .collect()
 }
