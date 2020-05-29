@@ -715,7 +715,10 @@ fn yago_shape_instances(
 
     let instances_to_keep: HashSet<YagoTerm> = human_instances.union(&human_neighbors_1).union(&human_neighbors_2);
     */
-    let instances_to_keep: HashSet<YagoTerm> = human_instances;
+    let instances_to_keep = map_to_yago(human_instances.iter().cloned(),
+                                        wikidata_to_yago_uris_mapping)
+        .filter(|i| !yago_classes.contains(i))
+        .collect(); // We do not want classes;
 
     instances_without_intersection_removal
         .into_iter()
